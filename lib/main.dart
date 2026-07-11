@@ -18,13 +18,12 @@ import 'screens/browser_tab.dart';
 import 'screens/download_tab.dart';
 import 'screens/proxy_tab.dart';
 import 'screens/settings_tab.dart';
-import 'screens/clipboard_tab.dart';
 
 import 'providers/app_state.dart';
 import 'providers/proxy_provider.dart';
 import 'providers/download_provider.dart';
 import 'providers/browser_provider.dart';
-import 'providers/clipboard_provider.dart';
+
 import 'services/proxy_tunnel.dart';
 import 'services/haptic_service.dart';
 import 'widgets/premium_bottom_nav.dart';
@@ -82,9 +81,6 @@ void main() async {
   dlProvider.setMaxConcurrent(appState.maxConcurrentDownloads);
   dlProvider.onAllDownloadsComplete = () => appState.notifyDownloadsComplete();
 
-  final clipboardProvider = ClipboardProvider();
-  await clipboardProvider.init();
-
   await ProxyTunnel().start();
 
   runApp(
@@ -93,7 +89,6 @@ void main() async {
         ChangeNotifierProvider.value(value: appState),
         ChangeNotifierProvider.value(value: proxyProvider),
         ChangeNotifierProvider.value(value: dlProvider),
-        ChangeNotifierProvider.value(value: clipboardProvider),
         ChangeNotifierProvider(create: (_) => BrowserProvider()),
       ],
       child: const OpenDirAppWrapper(),
@@ -235,12 +230,11 @@ class _MainLayoutState extends State<MainLayout> {
     BrowserTab(),
     DownloadTab(),
     ProxyTab(),
-    ClipboardTab(),
     SettingsTab(),
   ];
 
   final List<GlobalKey<NavigatorState>> _navigatorKeys = List.generate(
-    5,
+    4,
     (_) => GlobalKey<NavigatorState>(),
   );
 

@@ -31,11 +31,6 @@ class AppState with ChangeNotifier {
   String _securityQuestion = '';
   String _securityAnswer = '';
   int _autoLockSeconds = 0; // 0 = Immediate, 30, 60, 120
-  bool _clipboardMonitoring = true;
-  bool _clipboardPopupEnabled = true;
-  bool _clipboardAutoSave = false;
-  int _clipboardMaxHistory = 5000;
-  int _clipboardAutoDeleteDays = 0;
   bool _hapticFeedbackEnabled = true;
 
   // Retry settings
@@ -72,11 +67,6 @@ class AppState with ChangeNotifier {
   String get securityQuestion => _securityQuestion;
   String get securityAnswer => _securityAnswer;
   int get autoLockSeconds => _autoLockSeconds;
-  bool get clipboardMonitoring => _clipboardMonitoring;
-  bool get clipboardPopupEnabled => _clipboardPopupEnabled;
-  bool get clipboardAutoSave => _clipboardAutoSave;
-  int get clipboardMaxHistory => _clipboardMaxHistory;
-  int get clipboardAutoDeleteDays => _clipboardAutoDeleteDays;
   bool get hapticFeedbackEnabled => _hapticFeedbackEnabled;
 
   // Retry
@@ -142,11 +132,6 @@ class AppState with ChangeNotifier {
     _securityQuestion = prefs.getString('securityQuestion') ?? '';
     _securityAnswer = prefs.getString('securityAnswer') ?? '';
     _autoLockSeconds = prefs.getInt('autoLockSeconds') ?? 0;
-    _clipboardMonitoring = prefs.getBool('clipboardMonitoring') ?? true;
-    _clipboardPopupEnabled = prefs.getBool('clipboardPopupEnabled') ?? true;
-    _clipboardAutoSave = prefs.getBool('clipboardAutoSave') ?? false;
-    _clipboardMaxHistory = prefs.getInt('clipboardMaxHistory') ?? 5000;
-    _clipboardAutoDeleteDays = prefs.getInt('clipboardAutoDeleteDays') ?? 0;
     _hapticFeedbackEnabled = prefs.getBool('hapticFeedbackEnabled') ?? true;
 
     _retryCount = prefs.getInt('retryCount') ?? 3;
@@ -335,41 +320,6 @@ class AppState with ChangeNotifier {
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt('autoLockSeconds', seconds);
-  }
-
-  Future<void> setClipboardMonitoring(bool val) async {
-    _clipboardMonitoring = val;
-    notifyListeners();
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('clipboardMonitoring', val);
-  }
-
-  Future<void> setClipboardPopupEnabled(bool val) async {
-    _clipboardPopupEnabled = val;
-    notifyListeners();
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('clipboardPopupEnabled', val);
-  }
-
-  Future<void> setClipboardAutoSave(bool val) async {
-    _clipboardAutoSave = val;
-    notifyListeners();
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('clipboardAutoSave', val);
-  }
-
-  Future<void> setClipboardMaxHistory(int val) async {
-    _clipboardMaxHistory = val;
-    notifyListeners();
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt('clipboardMaxHistory', val);
-  }
-
-  Future<void> setClipboardAutoDeleteDays(int val) async {
-    _clipboardAutoDeleteDays = val;
-    notifyListeners();
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt('clipboardAutoDeleteDays', val);
   }
 
   Future<void> setHapticFeedbackEnabled(bool val) async {

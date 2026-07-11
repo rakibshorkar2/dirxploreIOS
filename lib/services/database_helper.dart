@@ -1,7 +1,6 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import '../models/download_item.dart';
-import '../models/clipboard_item.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper _instance = DatabaseHelper._internal();
@@ -59,13 +58,9 @@ class DatabaseHelper {
         resolvedUrl TEXT
       )
     ''');
-    await _createClipboardTable(db);
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    if (oldVersion < 2) {
-      await _createClipboardTable(db);
-    }
     if (oldVersion < 3) {
       await db.execute('ALTER TABLE downloads ADD COLUMN originalUrl TEXT');
     }
@@ -85,30 +80,6 @@ class DatabaseHelper {
       await db.execute('ALTER TABLE downloads ADD COLUMN redirectCount INTEGER DEFAULT 0');
       await db.execute('ALTER TABLE downloads ADD COLUMN resolvedUrl TEXT');
     }
-    if (oldVersion < 5) {
-      await _createClipboardTable(db);
-    }
-  }
-
-  Future<void> _createClipboardTable(Database db) async {
-    await db.execute('''
-      CREATE TABLE IF NOT EXISTS clipboard_items(
-        id TEXT PRIMARY KEY,
-        type INTEGER,
-        preview TEXT,
-        content TEXT,
-        createdAt TEXT,
-        isFavorite INTEGER DEFAULT 0,
-        isPinned INTEGER DEFAULT 0,
-        tags TEXT,
-        characterCount INTEGER,
-        wordCount INTEGER,
-        domain TEXT,
-        fileExtension TEXT,
-        language TEXT,
-        imagePath TEXT
-      )
-    ''');
   }
 
   Future<int> insertDownload(DownloadItem item) async {
@@ -150,49 +121,5 @@ class DatabaseHelper {
   Future<void> deleteAll() async {
     final db = await database;
     await db.delete('downloads');
-    await db.delete('clipboard_items');
-  }
-
-  // --- Clipboard Methods ---
-  Future<int> insertClipboardItem(ClipboardItem item) async {
-    final db = await database;
-    return await db.insert(
-      'clipboard_items',
-      item.toJson(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
-  }
-
-  Future<List<ClipboardItem>> getClipboardItems() async {
-    final db = await database;
-    final List<Map<String, dynamic>> maps = await db.query(
-      'clipboard_items',
-      orderBy: 'createdAt DESC',
-    );
-    return maps.map((map) => ClipboardItem.fromJson(map)).toList();
-  }
-
-  Future<int> updateClipboardItem(ClipboardItem item) async {
-    final db = await database;
-    return await db.update(
-      'clipboard_items',
-      item.toJson(),
-      where: 'id = ?',
-      whereArgs: [item.id],
-    );
-  }
-
-  Future<int> deleteClipboardItem(String id) async {
-    final db = await database;
-    return await db.delete(
-      'clipboard_items',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
-  }
-
-  Future<void> clearClipboardItems() async {
-    final db = await database;
-    await db.delete('clipboard_items');
   }
 }

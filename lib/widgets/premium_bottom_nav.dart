@@ -41,12 +41,6 @@ class _PremiumBottomNavState extends State<PremiumBottomNav>
       semanticLabel: 'Proxy settings',
     ),
     _NavItem(
-      icon: CupertinoIcons.doc_on_clipboard,
-      activeIcon: CupertinoIcons.doc_on_clipboard_fill,
-      label: 'Clipboard',
-      semanticLabel: 'Clipboard history',
-    ),
-    _NavItem(
       icon: CupertinoIcons.settings,
       activeIcon: CupertinoIcons.settings_solid,
       label: 'Settings',

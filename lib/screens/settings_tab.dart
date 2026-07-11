@@ -110,15 +110,6 @@ class SettingsTab extends StatelessWidget {
               SliverToBoxAdapter(
                 child: _buildSection(
                   context,
-                  CupertinoIcons.doc_on_clipboard,
-                  'Clipboard',
-                  _buildClipboardItems(context, appState),
-                ),
-              ),
-              const SliverToBoxAdapter(child: SizedBox(height: 20)),
-              SliverToBoxAdapter(
-                child: _buildSection(
-                  context,
                   CupertinoIcons.hand_draw,
                   'Haptics',
                   _buildHapticItems(context, appState),
@@ -602,61 +593,6 @@ class SettingsTab extends StatelessWidget {
     }
 
     return tiles;
-  }
-
-  List<Widget> _buildClipboardItems(BuildContext context, AppState appState) {
-    return [
-      GlassSwitchTile(
-        icon: CupertinoIcons.eye,
-        title: 'Clipboard Monitoring',
-        subtitle: 'Watch for new clipboard items',
-        value: appState.clipboardMonitoring,
-        onChanged: (val) => appState.setClipboardMonitoring(val),
-      ),
-      GlassSwitchTile(
-        icon: CupertinoIcons.doc_on_clipboard,
-        title: 'Show Clipboard Popup',
-        subtitle: 'Prompt to save new clipboard items',
-        value: appState.clipboardPopupEnabled,
-        onChanged: (val) => appState.setClipboardPopupEnabled(val),
-      ),
-      GlassSwitchTile(
-        icon: CupertinoIcons.arrow_down_doc,
-        title: 'Auto-Save Clipboard',
-        subtitle: 'Save items without asking',
-        value: appState.clipboardAutoSave,
-        onChanged: (val) => appState.setClipboardAutoSave(val),
-      ),
-      GlassDropdownTile<int>(
-        icon: CupertinoIcons.tray_full,
-        title: 'Max History Size',
-        subtitle: '${appState.clipboardMaxHistory} items',
-        value: appState.clipboardMaxHistory,
-        items: [100, 500, 1000, 5000, 10000]
-            .map((e) => DropdownMenuItem(value: e, child: Text(e.toString())))
-            .toList(),
-        onChanged: (val) {
-          if (val != null) appState.setClipboardMaxHistory(val);
-        },
-      ),
-      GlassDropdownTile<int>(
-        icon: CupertinoIcons.trash,
-        title: 'Auto-Delete After',
-        subtitle: appState.clipboardAutoDeleteDays == 0
-            ? 'Never'
-            : '${appState.clipboardAutoDeleteDays} days',
-        value: appState.clipboardAutoDeleteDays,
-        items: const [
-          DropdownMenuItem(value: 0, child: Text('Never')),
-          DropdownMenuItem(value: 7, child: Text('7 days')),
-          DropdownMenuItem(value: 30, child: Text('30 days')),
-          DropdownMenuItem(value: 90, child: Text('90 days')),
-        ],
-        onChanged: (val) {
-          if (val != null) appState.setClipboardAutoDeleteDays(val);
-        },
-      ),
-    ];
   }
 
   List<Widget> _buildHapticItems(BuildContext context, AppState appState) {

@@ -1026,7 +1026,6 @@ class _BrowserDrawer extends StatelessWidget {
                         GestureDetector(
                           onTap: () {
                             bs.removeBookmark(b['url']!);
-                            setState(() {});
                           },
                           child: Container(
                             padding: const EdgeInsets.all(8),
@@ -1211,7 +1210,6 @@ class _BrowserDrawer extends StatelessWidget {
                 autofocus: true,
                 onChanged: (v) {
                   bs.setSearchQuery(v);
-                  setState(() {});
                 },
               ),
             ),
