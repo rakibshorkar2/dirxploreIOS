@@ -1,6 +1,7 @@
 import Flutter
 import UIKit
 import UserNotifications
+import OSLog
 
 class DownloadPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
     @objc static func register(with registrar: FlutterPluginRegistrar) {
