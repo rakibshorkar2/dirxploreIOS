@@ -1,6 +1,7 @@
 import Flutter
 import UIKit
 import UserNotifications
+import OSLog
 
 @main
 @objc class AppDelegate: FlutterAppDelegate {
@@ -10,15 +11,24 @@ import UserNotifications
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
+        os_log("[STARTUP] application didFinishLaunchingWithOptions")
         GeneratedPluginRegistrant.register(with: self)
+        os_log("[STARTUP] GeneratedPluginRegistrant registered")
 
         if let registrar = self.registrar(forPlugin: "DownloadPlugin") {
+            os_log("[STARTUP] DownloadPlugin registrar obtained, registering...")
             DownloadPlugin.register(with: registrar)
+            os_log("[STARTUP] DownloadPlugin registered (includes TorrentBridgeHandler + TorrentBackgroundManager)")
+        } else {
+            os_log("[STARTUP] WARNING: DownloadPlugin registrar is nil!")
         }
 
-        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { _, _ in }
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { granted, _ in
+            os_log("[STARTUP] Notification authorization granted: %{public}@", String(granted))
+        }
 
         if let controller = window?.rootViewController as? FlutterViewController {
+            os_log("[STARTUP] FlutterViewController obtained from window")
             magnetChannel = FlutterMethodChannel(
                 name: "com.dirxplorerakib.pro/magnet_receiver",
                 binaryMessenger: controller.binaryMessenger
@@ -35,9 +45,15 @@ import UserNotifications
                     result(FlutterMethodNotImplemented)
                 }
             }
+            os_log("[STARTUP] Magnet channel initialized")
+        } else {
+            os_log("[STARTUP] WARNING: window.rootViewController is not FlutterViewController (type: %{public}@)",
+                   String(describing: type(of: window?.rootViewController)))
         }
 
-        return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+        let result = super.application(application, didFinishLaunchingWithOptions: launchOptions)
+        os_log("[STARTUP] super.application didFinishLaunchingWithOptions returned: %{public}@", String(result))
+        return result
     }
 
     private var pendingMagnetUrl: String?
