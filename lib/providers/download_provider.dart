@@ -35,8 +35,6 @@ class DownloadProvider with ChangeNotifier {
   static const MethodChannel _backgroundServiceChannel =
       MethodChannel('com.dirxplorerakib.pro/background_services');
   StreamSubscription? _iosEventSub;
-  StreamSubscription? _liveActivityErrorSub;
-
   final bool _isIOS = Platform.isIOS;
 
   final List<DownloadItem> _queue = [];
@@ -80,7 +78,7 @@ class DownloadProvider with ChangeNotifier {
 
     if (_isIOS) {
       _iosEventSub = _iosEvents.receiveBroadcastStream().listen(_handleiOSEvent);
-      _liveActivityErrorSub = _liveActivityErrorChannel.receiveBroadcastStream().listen((event) {
+      _liveActivityErrorChannel.receiveBroadcastStream().listen((event) {
         debugPrint('Live Activity error: $event');
       });
       _iosChannel.invokeMethod('getSavePath').then((path) {

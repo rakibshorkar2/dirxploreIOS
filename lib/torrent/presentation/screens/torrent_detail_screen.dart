@@ -440,7 +440,7 @@ class _TorrentDetailScreenState extends State<TorrentDetailScreen>
   }
 
   Widget _buildPiecesTab() {
-    final totalPieces = 100;
+    const totalPieces = 100;
     final completedPieces = (_task.progress * totalPieces).round();
     final partialPieces = (_task.progress * totalPieces % 1 > 0) ? 1 : 0;
 
