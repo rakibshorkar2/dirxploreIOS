@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:dio/dio.dart';
 import 'package:path/path.dart' as p;
 import 'dart:io';
+import '../feature_flags.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:isolate';
@@ -86,7 +87,9 @@ class DownloadProvider with ChangeNotifier {
           debugPrint('iOS save path: $path');
         }
       }).catchError((e) { debugPrint('Channel method error: $e'); });
-      enableLiveActivity();
+      if (FeatureFlags.liveActivities) {
+        enableLiveActivity();
+      }
     }
   }
 

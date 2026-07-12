@@ -52,6 +52,48 @@ func signalHandler(_ signal: Int32) {
         GeneratedPluginRegistrant.register(with: self)
         os_log("[STARTUP] GeneratedPluginRegistrant registered")
 
+        // Verify each plugin's registrar is live
+        let pluginNames: [(name: String, key: String)] = [
+            ("battery_plus",        "FPPBatteryPlusPlugin"),
+            ("connectivity_plus",   "ConnectivityPlusPlugin"),
+            ("disk_space_2",        "DiskSpace_2Plugin"),
+            ("file_picker",         "FilePickerPlugin"),
+            ("flutter_background_service", "FlutterBackgroundServicePlugin"),
+            ("flutter_inappwebview","InAppWebViewFlutterPlugin"),
+            ("flutter_local_notifications", "FlutterLocalNotificationsPlugin"),
+            ("local_auth",          "LocalAuthPlugin"),
+            ("media_kit_libs_ios_video", "MediaKitLibsIosVideoPlugin"),
+            ("media_kit_video",     "MediaKitVideoPlugin"),
+            ("package_info_plus",   "FPPPackageInfoPlusPlugin"),
+            ("permission_handler",  "PermissionHandlerPlugin"),
+            ("screen_brightness",   "ScreenBrightnessIosPlugin"),
+            ("share_plus",          "FPPSharePlusPlugin"),
+            ("shared_preferences",  "SharedPreferencesPlugin"),
+            ("sqflite",             "SqflitePlugin"),
+            ("url_launcher",        "URLLauncherPlugin"),
+            ("volume_controller",   "VolumeControllerPlugin"),
+            ("wakelock_plus",       "WakelockPlusPlugin"),
+            ("workmanager",         "WorkmanagerPlugin"),
+        ]
+        var allVerified = true
+        for (name, key) in pluginNames {
+            if self.registrar(forPlugin: key) != nil {
+                os_log("[PLUGIN] ✅ %{public}@ registered", name)
+            } else {
+                os_log("[PLUGIN] ❌ %{public}@ registrar is nil!", name)
+                allVerified = false
+            }
+        }
+        // path_provider is registered automatically via Dart (federated plugin) — no ObjC pod to verify
+        // libtorrent_flutter uses Dart FFI — no Flutter plugin registration needed
+        os_log("[PLUGIN] path_provider: skipped (federated, Dart-registered)")
+        os_log("[PLUGIN] libtorrent_flutter: skipped (Dart FFI, no ObjC registration)")
+        if allVerified {
+            os_log("[PLUGIN] All iOS plugins verified successfully")
+        } else {
+            os_log("[PLUGIN] One or more plugins have nil registrar — check Podfile / pod install")
+        }
+
         if let registrar = self.registrar(forPlugin: "DownloadPlugin") {
             os_log("[STARTUP] DownloadPlugin registrar obtained, registering...")
             DownloadPlugin.register(with: registrar)

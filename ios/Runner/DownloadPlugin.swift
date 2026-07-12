@@ -3,7 +3,7 @@ import UIKit
 import UserNotifications
 
 class DownloadPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
-    static func register(with registrar: FlutterPluginRegistrar) {
+    @objc static func register(with registrar: FlutterPluginRegistrar) {
         let messenger = registrar.messenger()
 
         let downloadChannel = FlutterMethodChannel(name: "com.dirxplorerakib.pro/ios_download", binaryMessenger: messenger)
