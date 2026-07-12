@@ -4,7 +4,7 @@ import Foundation
 
 /// Native iOS bridge for heavy torrent operations.
 /// All disk I/O runs on a dedicated background queue.
-class TorrentBridgeHandler: NSObject, FlutterStreamHandler {
+class TorrentBridgeHandler: NSObject, FlutterPlugin, FlutterStreamHandler {
     private static let bgQueue = DispatchQueue(
         label: "com.dirxplorerakib.pro.torrent-bg",
         qos: .utility
@@ -14,7 +14,7 @@ class TorrentBridgeHandler: NSObject, FlutterStreamHandler {
 
     // MARK: - Registration
 
-    static func register(with registrar: FlutterPluginRegistrar) {
+    @objc static func register(with registrar: FlutterPluginRegistrar) {
         let messenger = registrar.messenger()
 
         let methodChannel = FlutterMethodChannel(

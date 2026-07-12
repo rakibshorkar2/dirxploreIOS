@@ -7,7 +7,7 @@ import UserNotifications
 /// Manages torrent Live Activities (Dynamic Island + Lock Screen) and background tasks.
 /// Updates are throttled; completion posts a local notification.
 @available(iOS 16.2, *)
-class TorrentBackgroundManager: NSObject {
+class TorrentBackgroundManager: NSObject, FlutterPlugin {
     static let shared = TorrentBackgroundManager()
 
     private var backgroundTaskID: UIBackgroundTaskIdentifier?
@@ -19,7 +19,7 @@ class TorrentBackgroundManager: NSObject {
 
     // MARK: - Registration
 
-    static func register(with registrar: FlutterPluginRegistrar) {
+    @objc static func register(with registrar: FlutterPluginRegistrar) {
         let messenger = registrar.messenger()
         let channel = FlutterMethodChannel(
             name: "com.dirxplorerakib.pro/torrent_background",
