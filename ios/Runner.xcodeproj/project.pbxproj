@@ -20,6 +20,11 @@
 		FF000003 /* DownloadActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF000001 /* DownloadActivityAttributes.swift */; };
 		FF000005 /* WidgetExtensionBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF000004 /* WidgetExtensionBundle.swift */; };
 		FF000007 /* DownloadLiveActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF000006 /* DownloadLiveActivity.swift */; };
+		FF000024 /* TorrentLiveActivityWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF000025 /* TorrentLiveActivityWidget.swift */; };
+		FF000027 /* TorrentActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF000026 /* TorrentActivityAttributes.swift */; };
+		FF000028 /* TorrentActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF000026 /* TorrentActivityAttributes.swift */; };
+		FF00002A /* TorrentBackgroundManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF000029 /* TorrentBackgroundManager.swift */; };
+		FF00002C /* TorrentBridgeHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF00002B /* TorrentBridgeHandler.swift */; };
 		FF00001D /* WidgetExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = FF000009 /* WidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		FF00001F /* DownloadPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF00001E /* DownloadPlugin.swift */; };
 		FF000022 /* BackgroundAudioService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF000020 /* BackgroundAudioService.swift */; };
@@ -89,6 +94,10 @@
 		FF000001 /* DownloadActivityAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadActivityAttributes.swift; sourceTree = "<group>"; };
 		FF000004 /* WidgetExtensionBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetExtensionBundle.swift; sourceTree = "<group>"; };
 		FF000006 /* DownloadLiveActivity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadLiveActivity.swift; sourceTree = "<group>"; };
+		FF000025 /* TorrentLiveActivityWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TorrentLiveActivityWidget.swift; sourceTree = "<group>"; };
+		FF000026 /* TorrentActivityAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TorrentActivityAttributes.swift; sourceTree = "<group>"; };
+		FF000029 /* TorrentBackgroundManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TorrentBackgroundManager.swift; sourceTree = "<group>"; };
+		FF00002B /* TorrentBridgeHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TorrentBridgeHandler.swift; sourceTree = "<group>"; };
 		FF000008 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		FF000009 /* WidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = WidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		FF00001E /* DownloadPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadPlugin.swift; sourceTree = "<group>"; };
@@ -172,6 +181,9 @@
 		FF00001E /* DownloadPlugin.swift */,
 		FF000020 /* BackgroundAudioService.swift */,
 		FF000021 /* BackgroundLocationService.swift */,
+		FF000026 /* TorrentActivityAttributes.swift */,
+		FF000029 /* TorrentBackgroundManager.swift */,
+		FF00002B /* TorrentBridgeHandler.swift */,
 			);
 			path = Runner;
 			sourceTree = "<group>";
@@ -181,6 +193,7 @@
 			children = (
 				FF000004 /* WidgetExtensionBundle.swift */,
 				FF000006 /* DownloadLiveActivity.swift */,
+				FF000025 /* TorrentLiveActivityWidget.swift */,
 					FF000008 /* Info.plist */,
 			);
 			path = WidgetExtension;
@@ -371,6 +384,9 @@
 				FF00001F /* DownloadPlugin.swift in Sources */,
 			FF000022 /* BackgroundAudioService.swift in Sources */,
 			FF000023 /* BackgroundLocationService.swift in Sources */,
+			FF000027 /* TorrentActivityAttributes.swift in Sources */,
+			FF00002A /* TorrentBackgroundManager.swift in Sources */,
+			FF00002C /* TorrentBridgeHandler.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -381,6 +397,8 @@
 				FF000003 /* DownloadActivityAttributes.swift in Sources */,
 				FF000005 /* WidgetExtensionBundle.swift in Sources */,
 				FF000007 /* DownloadLiveActivity.swift in Sources */,
+				FF000024 /* TorrentLiveActivityWidget.swift in Sources */,
+				FF000028 /* TorrentActivityAttributes.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
