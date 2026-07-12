@@ -155,7 +155,7 @@ void main() async {
       rethrow;
     }
 
-    TorrentProvider torrentProvider;
+    TorrentProvider? torrentProvider;
     try {
       debugPrint('[STARTUP] Initializing torrent system...');
       final settingsRepo = SharedPrefsSettingsRepository();
@@ -184,8 +184,7 @@ void main() async {
       await magnetHandler.setup();
       debugPrint('[STARTUP] Magnet handler setup complete');
     } catch (e, s) {
-      debugPrint('[STARTUP] FATAL: Torrent init failed: $e\n$s');
-      rethrow;
+      debugPrint('[STARTUP] Torrent init failed (non-fatal): $e\n$s');
     }
 
     try {
@@ -196,18 +195,24 @@ void main() async {
       debugPrint('[STARTUP] ProxyTunnel start failed (non-fatal): $e\n$s');
     }
 
+    final providers = [
+      ChangeNotifierProvider.value(value: appState),
+      ChangeNotifierProvider.value(value: proxyProvider),
+      ChangeNotifierProvider.value(value: dlProvider),
+      ChangeNotifierProvider(create: (_) => BrowserProvider()),
+    ];
+    if (torrentProvider != null) {
+      providers.add(ChangeNotifierProvider.value(value: torrentProvider));
+      try {
+        await torrentProvider.init();
+        debugPrint('[STARTUP] TorrentProvider initialized');
+      } catch (e, s) {
+        debugPrint('[STARTUP] TorrentProvider.init failed (non-fatal): $e\n$s');
+      }
+    }
     debugPrint('[STARTUP] runApp() called');
     runApp(
-      MultiProvider(
-        providers: [
-          ChangeNotifierProvider.value(value: appState),
-          ChangeNotifierProvider.value(value: proxyProvider),
-          ChangeNotifierProvider.value(value: dlProvider),
-          ChangeNotifierProvider.value(value: torrentProvider),
-          ChangeNotifierProvider(create: (_) => BrowserProvider()),
-        ],
-        child: const OpenDirAppWrapper(),
-      ),
+      MultiProvider(providers: providers, child: const OpenDirAppWrapper()),
     );
     debugPrint('[STARTUP] runApp() completed');
   }, (Object error, StackTrace stack) {
