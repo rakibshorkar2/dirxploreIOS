@@ -144,7 +144,7 @@ class ProxyTab extends StatelessWidget {
                                 value: proxy.isActive,
                                 onChanged: (val) =>
                                     proxyProvider.toggleProxy(proxy.id, val),
-                                activeThumbColor:
+                                activeColor:
                                     Theme.of(context).colorScheme.primary,
                               ),
                               PopupMenuButton(
