@@ -3,6 +3,32 @@ import UIKit
 import UserNotifications
 import OSLog
 
+/// Uncaught ObjC exception handler — logs full info then crashes.
+func objcExceptionHandler(_ exception: NSException) {
+    os_log("[CRASH] NSException name: %{public}@", exception.name.rawValue)
+    os_log("[CRASH] NSException reason: %{public}@", exception.reason ?? "(nil)")
+    os_log("[CRASH] NSException userInfo: %{public}@", exception.userInfo ?? [:])
+    for (i, symbol) in exception.callStackSymbols.enumerated() {
+        os_log("[CRASH] NSException stack[%d]: %{public}@", i, symbol)
+    }
+}
+
+/// Signal handler for fatal crashes (SIGABRT, SIGSEGV, SIGBUS, etc).
+func signalHandler(_ signal: Int32) {
+    let name: String
+    switch signal {
+    case SIGABRT: name = "SIGABRT"
+    case SIGSEGV: name = "SIGSEGV"
+    case SIGBUS:  name = "SIGBUS"
+    case SIGFPE:  name = "SIGFPE"
+    case SIGILL:  name = "SIGILL"
+    case SIGPIPE: name = "SIGPIPE"
+    default:      name = "SIGNAL(\(signal))"
+    }
+    os_log("[CRASH] Signal received: %{public}@", name)
+    fatalError("Unhandled signal: \(name)")
+}
+
 @main
 @objc class AppDelegate: FlutterAppDelegate {
     private var magnetChannel: FlutterMethodChannel?
@@ -12,6 +38,17 @@ import OSLog
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
         os_log("[STARTUP] application didFinishLaunchingWithOptions")
+
+        // Install uncaught exception & signal handlers
+        NSSetUncaughtExceptionHandler(objcExceptionHandler)
+        signal(SIGABRT, signalHandler)
+        signal(SIGSEGV, signalHandler)
+        signal(SIGBUS, signalHandler)
+        signal(SIGFPE, signalHandler)
+        signal(SIGILL, signalHandler)
+        signal(SIGPIPE, signalHandler)
+        os_log("[STARTUP] ObjC exception + signal handlers installed")
+
         GeneratedPluginRegistrant.register(with: self)
         os_log("[STARTUP] GeneratedPluginRegistrant registered")
 

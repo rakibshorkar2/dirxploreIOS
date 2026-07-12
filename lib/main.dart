@@ -39,16 +39,40 @@ import 'torrent/infrastructure/services/magnet_handler.dart';
 void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
     WidgetsFlutterBinding.ensureInitialized();
+    FlutterError.onError = (details) {
+      debugPrint('[callbackDispatcher] FlutterError: ${details.exception}');
+    };
 
     if (task == 'autoResumeDownloads') {
-      final dummyProvider = DownloadProvider();
-      await dummyProvider.init();
-
-      await Future.delayed(const Duration(seconds: 10));
-      return true;
+      try {
+        final dummyProvider = DownloadProvider();
+        await dummyProvider.init();
+        await Future.delayed(const Duration(seconds: 10));
+        return true;
+      } catch (e, s) {
+        debugPrint('[callbackDispatcher] autoResumeDownloads error: $e\n$s');
+        return false;
+      }
     }
     return true;
   });
+}
+
+/// Captures all unhandled Flutter framework errors.
+void _setupFlutterErrorHandler() {
+  FlutterError.onError = (FlutterErrorDetails details) {
+    debugPrint('[FATAL] FlutterError.onError — ${details.exception}');
+    debugPrint('[FATAL] Stack: ${details.stack}');
+    debugPrint('[FATAL] Context: ${details.context}');
+    debugPrint('[FATAL] Library: ${details.library}');
+  };
+}
+
+/// Captures all unhandled Dart VM errors (async exceptions, null safety, etc).
+bool _dartErrorHandler(Object error, StackTrace stack) {
+  debugPrint('[FATAL] PlatformDispatcher.onError — $error');
+  debugPrint('[FATAL] Stack: $stack');
+  return true;
 }
 
 void main() async {
@@ -56,131 +80,140 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   debugPrint('[STARTUP] WidgetsFlutterBinding initialized');
 
-  try {
-    debugPrint('[STARTUP] MediaKit.ensureInitialized...');
-    MediaKit.ensureInitialized();
-    debugPrint('[STARTUP] MediaKit initialized');
-  } catch (e, s) {
-    debugPrint('[STARTUP] MediaKit initialization failed: $e\n$s');
-  }
+  _setupFlutterErrorHandler();
+  PlatformDispatcher.instance.onError = _dartErrorHandler;
+  debugPrint('[STARTUP] Global error handlers installed');
 
-  try {
-    debugPrint('[STARTUP] Workmanager().initialize...');
-    Workmanager().initialize(callbackDispatcher);
-    debugPrint('[STARTUP] Workmanager initialized');
+  await runZonedGuarded(() async {
+    try {
+      debugPrint('[STARTUP] MediaKit.ensureInitialized...');
+      MediaKit.ensureInitialized();
+      debugPrint('[STARTUP] MediaKit initialized');
+    } catch (e, s) {
+      debugPrint('[STARTUP] MediaKit initialization failed: $e\n$s');
+    }
 
-    Workmanager().registerPeriodicTask(
-      "auto-resume-task",
-      "autoResumeDownloads",
-      frequency: const Duration(minutes: 15),
-      constraints: Constraints(
-        networkType: NetworkType.connected,
-        requiresBatteryNotLow: true,
+    try {
+      debugPrint('[STARTUP] Workmanager().initialize...');
+      Workmanager().initialize(callbackDispatcher);
+      debugPrint('[STARTUP] Workmanager initialized');
+
+      Workmanager().registerPeriodicTask(
+        "auto-resume-task",
+        "autoResumeDownloads",
+        frequency: const Duration(minutes: 15),
+        constraints: Constraints(
+          networkType: NetworkType.connected,
+          requiresBatteryNotLow: true,
+        ),
+      );
+      debugPrint('[STARTUP] Workmanager periodic task registered');
+    } catch (e, s) {
+      debugPrint('[STARTUP] Workmanager init failed: $e\n$s');
+    }
+
+    try {
+      debugPrint('[STARTUP] FlutterDisplayMode.setHighRefreshRate...');
+      await FlutterDisplayMode.setHighRefreshRate();
+      debugPrint('[STARTUP] High refresh rate set');
+    } catch (e) {
+      debugPrint('[STARTUP] Failed to set high refresh rate: $e');
+    }
+
+    AppState appState;
+    try {
+      debugPrint('[STARTUP] AppState().init...');
+      appState = AppState();
+      await appState.init();
+      debugPrint('[STARTUP] AppState initialized');
+    } catch (e, s) {
+      debugPrint('[STARTUP] FATAL: AppState init failed: $e\n$s');
+      rethrow;
+    }
+
+    AppProxyProvider proxyProvider;
+    try {
+      debugPrint('[STARTUP] AppProxyProvider().init...');
+      proxyProvider = AppProxyProvider();
+      await proxyProvider.init();
+      debugPrint('[STARTUP] AppProxyProvider initialized');
+    } catch (e, s) {
+      debugPrint('[STARTUP] FATAL: AppProxyProvider init failed: $e\n$s');
+      rethrow;
+    }
+
+    DownloadProvider dlProvider;
+    try {
+      debugPrint('[STARTUP] DownloadProvider().init...');
+      dlProvider = DownloadProvider();
+      await dlProvider.init();
+      dlProvider.setMaxConcurrent(appState.maxConcurrentDownloads);
+      dlProvider.onAllDownloadsComplete = () => appState.notifyDownloadsComplete();
+      debugPrint('[STARTUP] DownloadProvider initialized');
+    } catch (e, s) {
+      debugPrint('[STARTUP] FATAL: DownloadProvider init failed: $e\n$s');
+      rethrow;
+    }
+
+    TorrentProvider torrentProvider;
+    try {
+      debugPrint('[STARTUP] Initializing torrent system...');
+      final settingsRepo = SharedPrefsSettingsRepository();
+      debugPrint('[STARTUP] SharedPrefsSettingsRepository created');
+      final torrentRepo = LiveTorrentRepository();
+      debugPrint('[STARTUP] LiveTorrentRepository created');
+      final torrentSearchService = TorrentSearchService();
+      final torrentNotifService = TorrentNotificationService();
+      final bgService = TorrentBackgroundService();
+      final magnetHandler = MagnetHandler();
+      final torrentManager = TorrentManager(
+        repository: torrentRepo,
+        settingsRepository: settingsRepo,
+      );
+      debugPrint('[STARTUP] TorrentManager created');
+      torrentProvider = TorrentProvider(
+        manager: torrentManager,
+        searchService: torrentSearchService,
+        notificationService: torrentNotifService,
+        backgroundService: bgService,
+        magnetHandler: magnetHandler,
+      );
+      debugPrint('[STARTUP] TorrentProvider created');
+
+      debugPrint('[STARTUP] magnetHandler.setup...');
+      await magnetHandler.setup();
+      debugPrint('[STARTUP] Magnet handler setup complete');
+    } catch (e, s) {
+      debugPrint('[STARTUP] FATAL: Torrent init failed: $e\n$s');
+      rethrow;
+    }
+
+    try {
+      debugPrint('[STARTUP] ProxyTunnel().start...');
+      await ProxyTunnel().start();
+      debugPrint('[STARTUP] ProxyTunnel started');
+    } catch (e, s) {
+      debugPrint('[STARTUP] ProxyTunnel start failed (non-fatal): $e\n$s');
+    }
+
+    debugPrint('[STARTUP] runApp() called');
+    runApp(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider.value(value: appState),
+          ChangeNotifierProvider.value(value: proxyProvider),
+          ChangeNotifierProvider.value(value: dlProvider),
+          ChangeNotifierProvider.value(value: torrentProvider),
+          ChangeNotifierProvider(create: (_) => BrowserProvider()),
+        ],
+        child: const OpenDirAppWrapper(),
       ),
     );
-    debugPrint('[STARTUP] Workmanager periodic task registered');
-  } catch (e, s) {
-    debugPrint('[STARTUP] Workmanager init failed: $e\n$s');
-  }
-
-  try {
-    debugPrint('[STARTUP] FlutterDisplayMode.setHighRefreshRate...');
-    await FlutterDisplayMode.setHighRefreshRate();
-    debugPrint('[STARTUP] High refresh rate set');
-  } catch (e) {
-    debugPrint('[STARTUP] Failed to set high refresh rate: $e');
-  }
-
-  AppState appState;
-  try {
-    debugPrint('[STARTUP] AppState().init...');
-    appState = AppState();
-    await appState.init();
-    debugPrint('[STARTUP] AppState initialized');
-  } catch (e, s) {
-    debugPrint('[STARTUP] FATAL: AppState init failed: $e\n$s');
-    rethrow;
-  }
-
-  AppProxyProvider proxyProvider;
-  try {
-    debugPrint('[STARTUP] AppProxyProvider().init...');
-    proxyProvider = AppProxyProvider();
-    await proxyProvider.init();
-    debugPrint('[STARTUP] AppProxyProvider initialized');
-  } catch (e, s) {
-    debugPrint('[STARTUP] FATAL: AppProxyProvider init failed: $e\n$s');
-    rethrow;
-  }
-
-  DownloadProvider dlProvider;
-  try {
-    debugPrint('[STARTUP] DownloadProvider().init...');
-    dlProvider = DownloadProvider();
-    await dlProvider.init();
-    dlProvider.setMaxConcurrent(appState.maxConcurrentDownloads);
-    dlProvider.onAllDownloadsComplete = () => appState.notifyDownloadsComplete();
-    debugPrint('[STARTUP] DownloadProvider initialized');
-  } catch (e, s) {
-    debugPrint('[STARTUP] FATAL: DownloadProvider init failed: $e\n$s');
-    rethrow;
-  }
-
-  TorrentProvider torrentProvider;
-  try {
-    debugPrint('[STARTUP] Initializing torrent system...');
-    final settingsRepo = SharedPrefsSettingsRepository();
-    debugPrint('[STARTUP] SharedPrefsSettingsRepository created');
-    final torrentRepo = LiveTorrentRepository();
-    debugPrint('[STARTUP] LiveTorrentRepository created');
-    final torrentSearchService = TorrentSearchService();
-    final torrentNotifService = TorrentNotificationService();
-    final bgService = TorrentBackgroundService();
-    final magnetHandler = MagnetHandler();
-    final torrentManager = TorrentManager(
-      repository: torrentRepo,
-      settingsRepository: settingsRepo,
-    );
-    debugPrint('[STARTUP] TorrentManager created');
-    torrentProvider = TorrentProvider(
-      manager: torrentManager,
-      searchService: torrentSearchService,
-      notificationService: torrentNotifService,
-      backgroundService: bgService,
-      magnetHandler: magnetHandler,
-    );
-    debugPrint('[STARTUP] TorrentProvider created');
-
-    debugPrint('[STARTUP] magnetHandler.setup...');
-    magnetHandler.setup();
-    debugPrint('[STARTUP] Magnet handler setup complete');
-  } catch (e, s) {
-    debugPrint('[STARTUP] FATAL: Torrent init failed: $e\n$s');
-    rethrow;
-  }
-
-  try {
-    debugPrint('[STARTUP] ProxyTunnel().start...');
-    await ProxyTunnel().start();
-    debugPrint('[STARTUP] ProxyTunnel started');
-  } catch (e, s) {
-    debugPrint('[STARTUP] ProxyTunnel start failed (non-fatal): $e\n$s');
-  }
-
-  debugPrint('[STARTUP] runApp() called');
-  runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider.value(value: appState),
-        ChangeNotifierProvider.value(value: proxyProvider),
-        ChangeNotifierProvider.value(value: dlProvider),
-        ChangeNotifierProvider.value(value: torrentProvider),
-        ChangeNotifierProvider(create: (_) => BrowserProvider()),
-      ],
-      child: const OpenDirAppWrapper(),
-    ),
-  );
-  debugPrint('[STARTUP] runApp() completed');
+    debugPrint('[STARTUP] runApp() completed');
+  }, (Object error, StackTrace stack) {
+    debugPrint('[FATAL] runZonedGuarded caught: $error');
+    debugPrint('[FATAL] Stack: $stack');
+  });
 }
 
 class OpenDirAppWrapper extends StatefulWidget {

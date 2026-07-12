@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 class MagnetHandler {
@@ -12,20 +13,30 @@ class MagnetHandler {
 
   bool _setup = false;
 
-  void setup() {
+  Future<void> setup() async {
     if (_setup) return;
     _setup = true;
     _channel.setMethodCallHandler((call) async {
-      switch (call.method) {
-        case 'onMagnet':
-          final uri = call.arguments as String;
-          _magnetStream.add(uri);
-        case 'onTorrentFile':
-          final path = call.arguments as String;
-          _torrentFileStream.add(path);
+      try {
+        switch (call.method) {
+          case 'onMagnet':
+            final uri = call.arguments as String;
+            _magnetStream.add(uri);
+          case 'onTorrentFile':
+            final path = call.arguments as String;
+            _torrentFileStream.add(path);
+          default:
+            debugPrint('[MagnetHandler] Unhandled method: ${call.method}');
+        }
+      } catch (e, s) {
+        debugPrint('[MagnetHandler] Error handling ${call.method}: $e\n$s');
       }
     });
-    _channel.invokeMethod<void>('checkPendingIntent');
+    try {
+      await _channel.invokeMethod<void>('checkPendingIntent');
+    } catch (e, s) {
+      debugPrint('[MagnetHandler] checkPendingIntent failed: $e\n$s');
+    }
   }
 
   String? getDisplayName(String magnetUri) {

@@ -35,6 +35,8 @@ class DownloadPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
     }
 
     func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+        os_log("[DownloadPlugin] handle method: %{public}@", call.method)
+        do {
         switch call.method {
         // Download methods
         case "startDownload":
@@ -211,6 +213,10 @@ class DownloadPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
 
         default:
             result(FlutterMethodNotImplemented)
+        }
+        } catch {
+            os_log("[DownloadPlugin] ERROR handling method %{public}@: %{public}@", call.method, String(describing: error))
+            result(FlutterError(code: "PLUGIN_ERROR", message: "\(error)", details: nil))
         }
     }
 
